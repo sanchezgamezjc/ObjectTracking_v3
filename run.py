@@ -10,7 +10,7 @@ net = cv2.dnn.readNetFromTensorflow("dnn/frozen_inference_graph_coco.pb",
                                   "dnn/mask_rcnn_inception_v2_coco_2018_01_28.pbtxt")
 
 
-cap = cv2.VideoCapture("Barcelona.mp4")
+cap = cv2.VideoCapture("los_angeles.mp4")
 
 
 fbgb = cv2.createBackgroundSubtractorMOG2() # Substraccion de fondo (elementos movimento blanco y fondo en negro)
@@ -39,27 +39,59 @@ while True:
     if not ret:
         break
 
+
+    x = int(frame.shape[1]*0.9)
+    y = int(frame.shape[0]*0.9)
+
     # Resize de la imagen a 1080*720
-    frame_res = cv2.resize(frame, (1080,720)) #Cambiamos la resolucion para reducir tamaño video
+    frame_res = cv2.resize(frame, (x,y)) #Cambiamos la resolucion para reducir tamaño video
 
 
-    ## Dibujarmos el contorno de la zona a analizar
-    #area_pts = np.array([
-    #    [380,412],
-    #    [700,412], 
-    #    [940,frame_res.shape[0]],
-    #    [140,frame_res.shape[0]]
-    #    ]) # Puntos sobre imagen (pixels=coord)
 
-    ## Contorno real de la imagen analizada
-    #area_pts_real = np.array([
-    #    [350,350],
-    #    [750,350], 
-    #    [1000,frame_res.shape[0]],
-    #    [100,frame_res.shape[0]]
-    #    ]) # Puntos sobre imagen (pixels=coord)
+    # Dibujarmos el contorno de la zona a analizar (Barcelona)
+    area_pts_aero = np.array([
+        [380,412],
+        [700,412], 
+        [940,frame_res.shape[0]],
+        [140,frame_res.shape[0]]
+        ]) 
 
-    #cv2.drawContours(frame_res, [area_pts],-1, color_rect, 2) #Dibujamos rectangulo
+    # Dibujarmos el contorno de la zona a analizar (los_angeles)
+    area_pts_la = np.array([
+        [345,300],
+        [535,300], 
+        [999,frame_res.shape[0]],
+        [84,frame_res.shape[0]]
+        ]) 
+
+    # Contorno real de la imagen analizada (Barcelona)
+    area_pts_real_aero = np.array([
+        [350,350],
+        [750,350], 
+        [1000,frame_res.shape[0]],
+        [100,frame_res.shape[0]]
+        ]) 
+
+    # Contorno real de la imagen analizada (los_angeles)
+    area_pts_real_la = np.array([
+        [350,350],
+        [750,350], 
+        [1000,frame_res.shape[0]],
+        [100,frame_res.shape[0]]
+        ]) 
+
+
+
+
+
+    area_pts = area_pts_la
+    area_pts_real = area_pts_real_la
+
+
+    cv2.drawContours(frame_res, [area_pts],-1, color_rect, 2) #Dibujamos rectangulo
+
+
+
 
 
     ## Generamos imagen auxiliar para eliminar fondo
@@ -88,7 +120,8 @@ while True:
         box = boxes[0,0,i]
 
 
-        if box[1] == 0:
+        #Clases: personas=0, coches=2
+        if box[1] == 2:
             x = int(box[3]*width)
             y = int(box[4]*height)
             x2 = int(box[5]*width)
